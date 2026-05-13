@@ -1,16 +1,18 @@
 package com.alerta.alerta_nacional.controllers;
 
-import com.alerta.alerta_nacional.Dto.ImagePublishRequest;
 import com.alerta.alerta_nacional.services.FacebookGraphService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.job.parameters.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import java.util.Map;
 
 @RestController
@@ -18,20 +20,26 @@ import java.util.Map;
 public class FacebookController {
 
     private final FacebookGraphService facebookGraphService;
+    private final JobLauncher jobLauncher;
+    private final Job postImagesJob;
 
-    public FacebookController(FacebookGraphService facebookGraphService) {
+    public FacebookController(FacebookGraphService facebookGraphService, JobLauncher jobLauncher, Job postImagesJob) {
         this.facebookGraphService = facebookGraphService;
+        this.jobLauncher = jobLauncher;
+        this.postImagesJob = postImagesJob;
     }
 
-    // PETICION CON URL DE LA IMAGEN
-    @PostMapping("/publish-image")
-    public ResponseEntity<?> publishImage(@RequestBody ImagePublishRequest request) {
+    // PETICION PARA EJECUTAR EL PROCESAMIENTO POR LOTES (BATCH)
+    @PostMapping("/run-batch")
+    public ResponseEntity<?> runBatch() {
         try {
-            Map<String, Object> response = facebookGraphService.publishPhoto(request.getImageUrl(),
-                    request.getMessage());
-            return ResponseEntity.ok(response);
+            JobParameters params = new JobParametersBuilder()
+                    .addLong("startAt", System.currentTimeMillis())
+                    .toJobParameters();
+            jobLauncher.run(postImagesJob, params);
+            return ResponseEntity.ok("Batch Job ejecutado con éxito.");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error ejecutando Batch: " + e.getMessage());
         }
     }
 
@@ -47,35 +55,11 @@ public class FacebookController {
         }
     }
 
-    // PETICION PARA SUBIR HISTORIA CON URL DE LA IMAGEN
-    @PostMapping("/publish-story")
-    public ResponseEntity<?> publishStory(@RequestBody ImagePublishRequest request) {
-        try {
-            Map<String, Object> response = facebookGraphService.publishPhotoStory(request.getImageUrl());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
-    }
-
     // PETICION PARA SUBIR HISTORIA CON IMAGEN LOCAL
     @PostMapping(value = "/upload-story", consumes = "multipart/form-data")
     public ResponseEntity<?> uploadStory(@RequestParam("file") MultipartFile file) {
         try {
             Map<String, Object> response = facebookGraphService.uploadPhotoStory(file);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
-    }
-
-    // PETICION PARA SUBIR POST + HISTORIA CON URL DE LA IMAGEN (solo el post lleva
-    // mensaje)
-    @PostMapping("/publish-post-and-story")
-    public ResponseEntity<?> publishPostAndStory(@RequestBody ImagePublishRequest request) {
-        try {
-            Map<String, Object> response = facebookGraphService.publishPostAndStory(
-                    request.getImageUrl(), request.getMessage());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
