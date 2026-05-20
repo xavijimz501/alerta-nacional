@@ -40,7 +40,7 @@ public class FacebookGraphService {
         }, message);
     }
 
-    // NUEVO: METODO PARA SUBIR IMAGEN DESDE UN ARCHIVO LOCAL (usado por el Batch)
+    // METODO PARA SUBIR IMAGEN DESDE UN ARCHIVO LOCAL (usado por el Watcher)
     public Map<String, Object> uploadPhotoFromFile(File file, String message) throws java.io.IOException {
         return uploadPhotoFromResource(new FileSystemResource(file), message);
     }

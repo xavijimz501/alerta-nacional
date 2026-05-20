@@ -1,7 +1,9 @@
 package com.alerta.alerta_nacional.controllers;
 
 import com.alerta.alerta_nacional.services.FacebookGraphService;
+import com.alerta.alerta_nacional.services.FacebookPublisherService;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -9,10 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.job.parameters.JobParameters;
-import org.springframework.batch.core.job.parameters.JobParametersBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
+import java.io.File;
 import java.util.Map;
 
 @RestController
@@ -20,26 +19,33 @@ import java.util.Map;
 public class FacebookController {
 
     private final FacebookGraphService facebookGraphService;
-    private final JobLauncher jobLauncher;
-    private final Job postImagesJob;
+    private final FacebookPublisherService facebookPublisherService;
+    private final String inputDirectory;
 
-    public FacebookController(FacebookGraphService facebookGraphService, JobLauncher jobLauncher, Job postImagesJob) {
+    public FacebookController(
+            FacebookGraphService facebookGraphService,
+            FacebookPublisherService facebookPublisherService,
+            @Value("${batch.input.directory:/Users/xaviersalvadorjimenezroldan/Downloads/}") String inputDirectory) {
         this.facebookGraphService = facebookGraphService;
-        this.jobLauncher = jobLauncher;
-        this.postImagesJob = postImagesJob;
+        this.facebookPublisherService = facebookPublisherService;
+        this.inputDirectory = inputDirectory;
     }
 
-    // PETICION PARA EJECUTAR EL PROCESAMIENTO POR LOTES (BATCH)
+    // PETICION PARA EJECUTAR EL PROCESAMIENTO (AHORA ASINCRONO POR LOTES EN CARPETA)
     @PostMapping("/run-batch")
     public ResponseEntity<?> runBatch() {
         try {
-            JobParameters params = new JobParametersBuilder()
-                    .addLong("startAt", System.currentTimeMillis())
-                    .toJobParameters();
-            jobLauncher.run(postImagesJob, params);
-            return ResponseEntity.ok("Batch Job ejecutado con éxito.");
+            File dir = new File(inputDirectory);
+            File[] files = dir.listFiles((d, name) -> name.toLowerCase().endsWith(".png"));
+            if (files != null && files.length > 0) {
+                for (File file : files) {
+                    facebookPublisherService.publishImageAsync(file);
+                }
+                return ResponseEntity.ok("Procesamiento asíncrono iniciado para " + files.length + " imágenes en la carpeta.");
+            }
+            return ResponseEntity.ok("No se encontraron imágenes pendientes (.png) para procesar en: " + inputDirectory);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error ejecutando Batch: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al iniciar el procesamiento: " + e.getMessage());
         }
     }
 
