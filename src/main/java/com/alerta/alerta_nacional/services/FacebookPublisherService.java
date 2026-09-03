@@ -58,11 +58,11 @@ public class FacebookPublisherService {
 
             log.info("Publicando en Facebook para: {}", personName);
 
-            // Delegar la petición HTTP a la capa de infraestructura
-            // facebookGraphService.uploadPhotoFromFile(file, message);
+            // Petición HTTP a la capa de servicio
+            facebookGraphService.uploadPhotoFromFile(file, message);
 
             // Subir Historia y publicar post usando el nuevo método para File
-            facebookGraphService.uploadPostAndStoryFromFile(file, message);
+            // facebookGraphService.uploadPostAndStoryFromFile(file, message);
 
             log.info("Publicación exitosa en Facebook para: {}", personName);
 

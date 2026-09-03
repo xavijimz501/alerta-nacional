@@ -1,0 +1,27 @@
+31 de marzo de 2026 fue la primer alerta que publicamos en Facebook.
+
+- para renovar token
+tiene que ser tokens de acceso a la pagina Alerta Nacional con todos los permisos
+
+- para compilar  descargar dependencias
+mvn clean install
+
+- para ejecutar
+./mvnw spring-boot:run
+
+- Abrir terminal y colocarse dentro de alerta-nacional
+- Ejecutar java -jar target/meta-service.jar
+
+- para ejecutar con Docker (Recomendado para usar en otras computadoras)
+1. Asegurarse de tener Docker y Docker Compose instalados.
+2. Ejecutar el siguiente comando en la terminal desde la raíz del proyecto:
+   docker compose up --build
+3. La aplicación se compilará y se iniciará automáticamente en http://localhost:8080
+
+- Para eliminar las publicaciones de las personas localizadas
+curl -X POST "http://localhost:8080/api/facebook/delete-by-file" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@/Users/xaviersalvadorjimenezroldan/Documents/CNB/desarrollos/personas_localizadas.txt"
+
+
+

@@ -1,0 +1,11 @@
+services:
+  alerta-nacional:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: alerta-nacional-container
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./input-fichas:/Users/xaviersalvadorjimenezroldan/Downloads/ # Tu carpeta local mapeada dentro del contenedor
+    restart: unless-stopped

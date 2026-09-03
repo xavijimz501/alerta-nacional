@@ -47,7 +47,7 @@ public class FacebookGraphService {
 
     // HELPER PARA EVITAR DUPLICACION DE LOGICA DE SUBIDA
     private Map<String, Object> uploadPhotoFromResource(Resource resource, String message) {
-        String url = "https://graph.facebook.com/v25.0/" + facebookProperties.getId() + "/photos";
+        String url = "https://graph.facebook.com/v25.0/" + facebookProperties.getId() + "/photos?fields=id";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -130,7 +130,7 @@ public class FacebookGraphService {
 
     // HELPER: Subir foto no publicada desde recurso y obtener photo_id
     private String uploadUnpublishedPhotoFromResource(Resource resource) {
-        String url = "https://graph.facebook.com/v25.0/" + facebookProperties.getId() + "/photos";
+        String url = "https://graph.facebook.com/v25.0/" + facebookProperties.getId() + "/photos?fields=id";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -159,7 +159,7 @@ public class FacebookGraphService {
 
     // HELPER: Publicar historia con el photo_id
     private Map<String, Object> publishStoryWithPhotoId(String photoId) {
-        String url = "https://graph.facebook.com/v25.0/" + facebookProperties.getId() + "/photo_stories";
+        String url = "https://graph.facebook.com/v25.0/" + facebookProperties.getId() + "/photo_stories?fields=id";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
